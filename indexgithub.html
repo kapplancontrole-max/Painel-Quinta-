@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Kapplan Mobi Charger - AbrangeBox DLB</title>
+    <style>
+        /* Estilos Base & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', 'Inter', 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+            overflow-x: hidden;
+            padding-top: 100px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header / Navbar */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0056b3;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            background: #e6fffa;
+            color: #234e52;
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid #b2f5ea;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #38a169;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        /* Painel Dashboard */
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .card {
+            flex: 1;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .card p {
+            margin: 8px 0 0 0;
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .bg-consumo {
+            background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+        }
+
+        .bg-limite {
+            background: linear-gradient(135deg, #0056b3 0%, #002d62 100%);
+        }
+
+        .bg-status {
+            background: linear-gradient(135deg, #28a745 0%, #155724 100%);
+        }
+
+        /* Seções de Tabela */
+        .section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Estilização da Tabela de Wallbox */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-charging {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-available {
+            background-color: #e0f2fe;
+            color: #075985;
+        }
+
+        .badge-offline {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            padding: 30px 0;
+            font-size: 13px;
+            margin-top: 60px;
+            border-top: 1px solid #2d3748;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard { flex-direction: column; gap: 15px; }
+            body { padding-top: 120px; }
+            .nav-container { flex-direction: column; height: auto; padding: 15px 0; gap: 10px; }
+            .brand-title { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Principal -->
+    <header>
+        <div class="container nav-container">
+            <div class="brand-title">
+                Kapplan Mobi Charge
+            </div>
+            <div class="system-status">
+                <div class="status-dot"></div>
+                <span id="txt_status_sistema">Monitoramento em Tempo Real</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Bloco de Exibição das Métricas Gerais -->
+        <div class="dashboard">
+            <div class="card bg-consumo">
+                <h3>Consumo Atual Prédio</h3>
+                <p><span id="txt_consumo">0.00</span> kW</p>
+            </div>
+            <div class="card bg-limite">
+                <h3>Limite Técnico Geral</h3>
+                <p><span id="txt_limite">0.00</span> kW</p>
+            </div>
+            <div class="card bg-status">
+                <h3>Distribuição DLB</h3>
+                <p><span id="txt_carregando">0/0</span> em <span id="txt_corrente">0</span>A</p>
+            </div>
+        </div>
+
+        <!-- Seção: Monitoramento e Lista de Wallbox -->
+        <div class="section">
+            <h2>🚗 Estações e Distribuição Individual</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Identificação</th>
+                            <th>ID OCPP (Hardware)</th>
+                            <th>Status Conector</th>
+                            <th>Corrente Limite (DLB)</th>
+                            <th>Consumo Total (kWh)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela_vagas">
+                        <tr>
+                            <td colspan="5" style="text-align:center;">Buscando informações do servidor na nuvem...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Rodapé Administrativo -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 AbrangeBox. Todos os direitos reservados. Gestão de Carga Dinâmica Inteligente Nativa OCPP.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Importante: Substitua este valor pela sua URL real gerada na Implantação do Google Apps Script
+        const URL_GAS = "https://script.google.com/macros/s/SUA_URL_DO_GAS_AQUI/exec";
+
+        function atualizarPainel() {
+            fetch(URL_GAS)
+                .then(response => response.json())
+                .then(data => {
+                    // Verifica se já existem dados recebidos do servidor local
+                    if (data.mensagem) {
+                        document.getElementById('tabela_vagas').innerHTML = `
+                            <tr><td colspan="5" style="text-align:center;">${data.mensagem}</td></tr>
+                        `;
+                        return;
+                    }
+
+                    // Métricas Principais
+                    let consumoKW = ( (data.consumo_atual_w || 0) / 1000.0 ).toFixed(2);
+                    let limiteKW = ( (data.limite_geral_w || 0) / 1000.0 ).toFixed(2);
+                    
+                    document.getElementById('txt_consumo').innerText = consumoKW;
+                    document.getElementById('txt_limite').innerText = limiteKW;
+
+                    // Atualiza a tabela detalhada e o indicador de distribuição
+                    if (data.vagas) {
+                        let totalEstacoes = Object.keys(data.vagas).length;
+                        let recarregandoCount = 0;
+                        let correnteCorrente = 32;
+                        let htmlTabela = '';
+
+                        // Considera APENAS as estações que estão ativamente injetando energia no veículo
+                        const estadosAtivos = ["Charging"];
+
+                        for (let idHW in data.vagas) {
+                            let vaga = data.vagas[idHW];
+                            let status = vaga.status || "Available";
+                            
+                            let estaCarregando = estadosAtivos.includes(status);
+                            
+                            if (estaCarregando) {
+                                recarregandoCount++;
+                                correnteCorrente = vaga.corrente_alvo_a || 32;
+                            }
+
+                            let badgeClass = "badge-offline";
+                            if (status === "Charging") {
+                                badgeClass = "badge-charging";
+                            } else if (status === "Available") {
+                                badgeClass = "badge-available";
+                            }
+
+                            htmlTabela += `
+                                <tr>
+                                    <td><strong>${vaga.filtro_planilha || idHW}</strong></td>
+                                    <td><code>${idHW}</code></td>
+                                    <td><span class="badge-status ${badgeClass}">${status}</span></td>
+                                    <td><strong>${vaga.corrente_alvo_a || 32} A</strong></td>
+                                    <td>${(vaga.consumo_acumulado || 0.0).toFixed(2)} kWh</td>
+                                </tr>
+                            `;
+                        }
+
+                        document.getElementById('txt_carregando').innerText = `${recarregandoCount}/${totalEstacoes}`;
+                        document.getElementById('txt_corrente').innerText = recarregandoCount > 0 ? correnteCorrente : 0;
+
+                        if (totalEstacoes > 0) {
+                            document.getElementById('tabela_vagas').innerHTML = htmlTabela;
+                        } else {
+                            document.getElementById('tabela_vagas').innerHTML = `
+                                <tr><td colspan="5" style="text-align:center;">Nenhuma estação cadastrada no momento.</td></tr>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao conectar com a API do Google Apps Script:', error);
+                });
+        }
+
+        // Atualiza o painel a cada 10 segundos
+        setInterval(atualizarPainel, 10000);
+        atualizarPainel();
+    </script>
+</body>
+</html>
