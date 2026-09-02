@@ -192,6 +192,11 @@
             color: #075985;
         }
 
+        .badge-suspended {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
         .badge-offline {
             background-color: #f3f4f6;
             color: #6b7280;
@@ -256,11 +261,11 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Identificação</th>
-                            <th>ID OCPP (Hardware)</th>
-                            <th>Status Conector</th>
-                            <th>Corrente Limite (DLB)</th>
-                            <th>Consumo Total (kWh)</th>
+                            <th scope="col">Identificação</th>
+                            <th scope="col">ID OCPP (Hardware)</th>
+                            <th scope="col">Status Conector</th>
+                            <th scope="col">Corrente Limite (DLB)</th>
+                            <th scope="col">Consumo Total (kWh)</th>
                         </tr>
                     </thead>
                     <tbody id="tabela_vagas">
@@ -285,14 +290,28 @@
         // Importante: Substitua este valor pela sua URL real gerada na Implantação do Google Apps Script
         const URL_GAS = "https://script.google.com/macros/s/AKfycby3WQ5O2Bhvlr4bJJEvVBYz0Q5MGhHDu8qjuiRR_J6pdTRik6JP-cdJK2sD62v6u40/exec";
 
+        // Função para higienizar dados exibidos no HTML (prevenção contra scripts maliciosos)
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>"']/g, match => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[match]));
+        }
+
         function atualizarPainel() {
             fetch(URL_GAS)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha na resposta do servidor.');
+                    return response.json();
+                })
                 .then(data => {
                     // Verifica se já existem dados recebidos do servidor local
                     if (data.mensagem) {
                         document.getElementById('tabela_vagas').innerHTML = `
-                            <tr><td colspan="5" style="text-align:center;">${data.mensagem}</td></tr>
+                            <tr><td colspan="5" style="text-align:center;">${escapeHTML(data.mensagem)}</td></tr>
                         `;
                         return;
                     }
@@ -325,18 +344,23 @@
                                 correnteCorrente = vaga.corrente_alvo_a || 32;
                             }
 
+                            // Classificação visual de badges por status da estação
                             let badgeClass = "badge-offline";
                             if (status === "Charging") {
                                 badgeClass = "badge-charging";
                             } else if (status === "Available") {
                                 badgeClass = "badge-available";
+                            } else if (status === "SuspendedEV" || status === "SuspendedEVSE" || status === "Preparing") {
+                                badgeClass = "badge-suspended";
                             }
+
+                            let nomeVaga = vaga.filtro_planilha || idHW;
 
                             htmlTabela += `
                                 <tr>
-                                    <td><strong>${vaga.filtro_planilha || idHW}</strong></td>
-                                    <td><code>${idHW}</code></td>
-                                    <td><span class="badge-status ${badgeClass}">${status}</span></td>
+                                    <td><strong>${escapeHTML(nomeVaga)}</strong></td>
+                                    <td><code>${escapeHTML(idHW)}</code></td>
+                                    <td><span class="badge-status ${badgeClass}">${escapeHTML(status)}</span></td>
                                     <td><strong>${vaga.corrente_alvo_a || 32} A</strong></td>
                                     <td>${(vaga.consumo_acumulado || 0.0).toFixed(2)} kWh</td>
                                 </tr>
